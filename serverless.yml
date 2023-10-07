@@ -11,9 +11,8 @@ custom:
 provider:
   name: aws
   runtime: nodejs18.x
-  region: us-east-1
-  stage: dev
   profile: default
+  region: us-east-1
   httpApi:
     cors: true
   iam:
@@ -27,15 +26,13 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          # Resource:
-            # - Fn::GetAtt: [ Notes, Arn ]
           Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.NOTES}"
   environment:
     NOTES: ${self:custom.tableName}
 
 functions:
   createNote:
-    handler: handler.create
+    handler: create.handler
     description: Submit candidate information and starts interview process.
     events:
       - httpApi: 
@@ -43,14 +40,14 @@ functions:
           method: post
 
   getNotes:
-    handler: handler.list
+    handler: list.handler
     events:
       - httpApi:
           path: /notes
           method: GET
 
   deleteNote:
-    handler: handler.delete
+    handler: delete.handler
     events:
       - httpApi:
           path: /notes/{id}
@@ -60,7 +57,6 @@ functions:
 resources:
   Resources:
     Notes:
-      DeletionPolicy: Retain
       Type: AWS::DynamoDB::Table
       Properties:
         BillingMode: PAY_PER_REQUEST
